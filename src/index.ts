@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 import * as twitterApi from "twitter-api-v2";
 dotenv.config();
 
-let cachedPrice: number = 0;
+let cachedPrice: number = 11.99;
 
 async function getTIAPrice() {
   const url =
@@ -12,7 +12,6 @@ async function getTIAPrice() {
 
   const tweet: string = await axios.get(url).then(function (response) {
     let lastPrice = response.data.celestia.usd;
-    cachedPrice = lastPrice;
 
     let percentageChange = Math.abs((lastPrice - cachedPrice) / cachedPrice);
     let direction = lastPrice > cachedPrice ? "more" : "less";
@@ -22,9 +21,11 @@ async function getTIAPrice() {
       date.getMonth() + 1
     }-${date.getDate()}`;
 
-    const tweet = `${dateString} The data is ${(percentageChange * 100).toFixed(
+    const tweet = `The data is ${(percentageChange * 100).toFixed(
       2
-    )}% ${direction} available today. @celestiaorg`;
+    )}% ${direction} available today (${dateString}). @celestiaorg`;
+
+    cachedPrice = lastPrice;
     return tweet;
   });
   return tweet;
@@ -52,6 +53,8 @@ async function main() {
     await tweetTIAPrices(logs);
   }
 }
+
+main();
 
 // Schedule the script to run every 24 hours
 const job = new CronJob("0 9 * * *", main, null, true, "America/New_York");
